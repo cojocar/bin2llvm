@@ -1,0 +1,24 @@
+From fc34023b9dd2d497dc0e63bd64b4019edcbd4ddf Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Mon, 24 Jul 2017 15:48:07 +0200
+Subject: [PATCH 1/7] s2e: configure: add extra dirs
+
+---
+ qemu/configure | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/qemu/configure b/qemu/configure
+index 9e7b9c1..e4194da 100755
+--- a/qemu/configure
++++ b/qemu/configure
+@@ -3823,6 +3823,7 @@ if test "$target_s2e" = "yes"; then
+   S2E_DIRS="s2e s2e/Interceptor s2e/Plugins s2e/Plugins/WindowsInterceptor s2e/Configuration s2e/Signals"
+   S2E_DIRS="$S2E_DIRS s2e/Plugins/DataSelectors s2e/Plugins/ExecutionTracers"
+   S2E_DIRS="$S2E_DIRS s2e/Plugins/WindowsApi s2e/Plugins/Searchers"
++  S2E_DIRS="$S2E_DIRS s2e/Plugins/bin2llvm"
+   for dir in $S2E_DIRS ; do
+     mkdir -p $target_dir/$dir
+   done
+-- 
+2.1.4
+

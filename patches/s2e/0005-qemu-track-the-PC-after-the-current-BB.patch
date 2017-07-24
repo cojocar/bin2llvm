@@ -1,0 +1,45 @@
+From ebf3658b0bde37ecbf9f665ae8725c35e6400208 Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Mon, 24 Jul 2017 17:29:22 +0200
+Subject: [PATCH 5/7] qemu: track the PC after the current BB
+
+---
+ qemu/exec-all.h             | 1 +
+ qemu/target-arm/translate.c | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/qemu/exec-all.h b/qemu/exec-all.h
+index b01b388..97704a3 100644
+--- a/qemu/exec-all.h
++++ b/qemu/exec-all.h
+@@ -220,6 +220,7 @@ struct TranslationBlock {
+     uint8_t *llvm_tc_ptr;
+     uint8_t *llvm_tc_end;
+     struct TranslationBlock* llvm_tb_next[2];
++    uint64_t llvm_first_pc_after_bb;
+ #endif
+ 
+ #ifdef CONFIG_S2E
+diff --git a/qemu/target-arm/translate.c b/qemu/target-arm/translate.c
+index d65c294..9ca2899 100644
+--- a/qemu/target-arm/translate.c
++++ b/qemu/target-arm/translate.c
+@@ -3598,6 +3598,7 @@ static inline void gen_goto_tb(DisasContext *s, int n, uint32_t dest)
+     tb = s->tb;
+ 
+ #ifdef CONFIG_S2E
++    tb->llvm_first_pc_after_bb = s->pc;
+     s2e_on_translate_block_end(g_s2e, g_s2e_state,
+                                tb, s->insPc, 1, dest);
+     gen_instr_end(s);
+@@ -10210,6 +10211,7 @@ static inline void gen_intermediate_code_internal(CPUARMState *env,
+             /* indicate that the hash table must be used to find the next TB */
+ 
+ #ifdef CONFIG_S2E
++            tb->llvm_first_pc_after_bb = dc->pc;
+             s2e_on_translate_block_end(g_s2e, g_s2e_state,
+                                tb, dc->insPc, 0, 0);
+             gen_instr_end(dc);
+-- 
+2.1.4
+

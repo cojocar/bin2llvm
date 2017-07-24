@@ -1,0 +1,4 @@
+s2e-out-*
+s2e-last
+qemu.log
+*.swp

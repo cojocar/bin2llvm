@@ -1,0 +1,14 @@
+# vim: set ft=make:
+
+.SECONDARY:
+
+%.bin: %.elf
+	$(OBJCOPY) -S -j.text -O binary $< $@
+
+.PHONY: clean
+
+clean: logclean
+	rm -f *.bin *.elf *.o
+
+logclean:
+	rm -Rf s2e-last s2e-out-* qemu.log

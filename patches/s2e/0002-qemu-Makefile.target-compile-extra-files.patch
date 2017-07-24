@@ -1,0 +1,44 @@
+From e31e5703311007fd552eb9d4ac70a9711ef0898b Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Mon, 24 Jul 2017 16:22:03 +0200
+Subject: [PATCH 2/7] qemu: Makefile.target: compile extra files
+
+---
+ qemu/Makefile.target | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/qemu/Makefile.target b/qemu/Makefile.target
+index 6f16e6d..07a8c73 100644
+--- a/qemu/Makefile.target
++++ b/qemu/Makefile.target
+@@ -263,6 +263,9 @@ obj-$(CONFIG_IVSHMEM) += ivshmem.o
+ # Generic hotplugging
+ obj-y += device-hotplug.o
+ 
++#Configurable machine
++obj-y += configurable_machine.o
++
+ # Hardware support
+ obj-i386-y += vga.o vl.o pci.o
+ obj-i386-y += mc146818rtc.o pc.o
+@@ -528,6 +531,17 @@ s2eobj-y += s2e/ExprInterface.o
+ s2eobj-y += s2e/S2E.o
+ s2eobj-y += s2e/x64.o
+ 
++
++#LLVM translator files
++s2eobj-y += s2e/Plugins/bin2llvm/RecursiveDescentDisassembler.o
++s2eobj-y += s2e/Plugins/bin2llvm/PrintCPUOffsets.o
++s2eobj-y += s2e/Plugins/bin2llvm/JumpTableInfo.o
++s2eobj-y += s2e/Plugins/bin2llvm/S2ETransformPass.o
++s2eobj-y += s2e/Plugins/bin2llvm/ExtractPossibleTargetsPass.o
++s2eobj-y += s2e/Plugins/bin2llvm/ARMGetThumbBit.o
++s2eobj-y += s2e/Plugins/bin2llvm/S2EInlineHelpersPass.o
++s2eobj-y += s2e/Plugins/bin2llvm/SaveTranslatedBBs.o
++
+ ifeq ($(TARGET_BASE_ARCH), i386)
+ 	s2eobj-y += $(s2eobj-i386-y) $(s2eobj-win-y)
+ endif
+-- 
+2.1.4
+

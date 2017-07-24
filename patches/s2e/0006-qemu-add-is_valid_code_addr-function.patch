@@ -1,0 +1,50 @@
+From d0279a6b4fb16938dc62f1dbd94c00b1ffa9a69f Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Mon, 24 Jul 2017 17:33:11 +0200
+Subject: [PATCH 6/7] qemu: add is_valid_code_addr function
+
+---
+ qemu/exec.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/qemu/exec.c b/qemu/exec.c
+index 2d036ac..f6f3ec9 100644
+--- a/qemu/exec.c
++++ b/qemu/exec.c
+@@ -4941,6 +4941,33 @@ void dump_exec_info(FILE *f, fprintf_function cpu_fprintf)
+     tcg_dump_info(f, cpu_fprintf);
+ }
+ 
++int is_valid_code_addr(CPUArchState* env1, target_ulong addr);
++int is_valid_code_addr(CPUArchState* env1, target_ulong addr)
++{
++    int mmu_idx, page_index, pd;
++    MemoryRegion *mr;
++
++    page_index = (addr >> TARGET_PAGE_BITS) & (CPU_TLB_SIZE - 1);
++    mmu_idx = cpu_mmu_index(env1);
++    if (unlikely(env1->tlb_table[mmu_idx][page_index].addr_code !=
++                 (addr & TARGET_PAGE_MASK))) {
++#ifdef CONFIG_TCG_PASS_AREG0
++        cpu_ldub_code(env1, addr);
++#else
++        ldub_code(addr);
++#endif
++    }
++    pd = env1->iotlb[mmu_idx][page_index] & ~TARGET_PAGE_MASK;
++    mr = iotlb_to_region(pd);
++    if (mr != &io_mem_ram && mr != &io_mem_rom
++        && mr != &io_mem_notdirty && !mr->rom_device
++        && mr != &io_mem_watch) {
++        return 0;
++    }
++
++    return 1;
++}
++
+ 
+ /* NOTE: this function can trigger an exception */
+ /* NOTE2: the returned address is not exactly the physical address: it
+-- 
+2.1.4
+

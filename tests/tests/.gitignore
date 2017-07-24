@@ -1,0 +1,5 @@
+*.S.bin
+*.elf.bin
+*.elf
+*.c.bin
+*.o

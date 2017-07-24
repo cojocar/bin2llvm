@@ -1,0 +1,24 @@
+--- tmp/orig.stddef.h	2015-05-06 10:17:15.282729248 +0200
++++ llvm-native/Release/lib/clang/3.2/include/stddef.h	2015-05-06 10:39:27.730736578 +0200
+@@ -57,10 +57,21 @@
+ namespace std { typedef decltype(nullptr) nullptr_t; }
+ using ::std::nullptr_t;
+ #endif
+ #endif
+ 
++#if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L
++typedef struct {
++  long long __clang_max_align_nonce1
++      __attribute__((__aligned__(__alignof__(long long))));
++  long double __clang_max_align_nonce2
++      __attribute__((__aligned__(__alignof__(long double))));
++} max_align_t;
++#define __CLANG_MAX_ALIGN_T_DEFINED
++#endif
++
++
+ #define offsetof(t, d) __builtin_offsetof(t, d)
+ 
+ #endif /* __STDDEF_H */
+ 
+ /* Some C libraries expect to see a wint_t here. Others (notably MinGW) will use

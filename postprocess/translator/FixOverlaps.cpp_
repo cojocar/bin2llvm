@@ -1,0 +1,205 @@
+#include <set>
+#include <algorithm>
+
+#include "FixOverlaps.h"
+#include "PassUtils.h"
+#include "PcUtils.h"
+#include "MetaUtils.h"
+
+using namespace llvm;
+
+char FixOverlapsPass::ID = 0;
+static RegisterPass<FixOverlapsPass> X("fix-overlaps",
+        "S2E fix overlapping PC in basic blocks", false, false);
+
+static void findMergePairs(Function *wrapper,
+        std::list<std::pair<BasicBlock*, BasicBlock*>> &mergeList) {
+    std::map<unsigned, std::vector<BasicBlock*>> bbMap;
+    std::set<BasicBlock*> mergeBlocks;
+
+    for (BasicBlock &bb : *wrapper) {
+        if (isRecoveredBlock(&bb)) {
+            unsigned lastpc = getLastPc(&bb);
+
+            if (bbMap.find(lastpc) == bbMap.end())
+                bbMap[lastpc] = std::vector<BasicBlock*>();
+
+            bbMap[lastpc].push_back(&bb);
+        }
+    }
+
+    for (auto it : bbMap) {
+        const unsigned lastpc = it.first;
+        std::vector<BasicBlock*> &merge = it.second;
+
+        if (merge.size() < 2)
+            continue;
+
+        // a block can only be merged with one other block
+        for (BasicBlock *bb : merge) {
+            if (mergeBlocks.find(bb) != mergeBlocks.end()) {
+                ERROR("block " << bb->getName() << " being merged twice");
+                exit(1);
+            }
+            mergeBlocks.insert(bb);
+        }
+
+        // sort merge candidates by ascending start address
+        std::sort(merge.begin(), merge.end(),
+                [](BasicBlock *a, BasicBlock *b) {
+                    return getBlockAddress(a) < getBlockAddress(b);
+                });
+
+        // merge the largest two successors, then merge the result with the
+        // next, etc.
+        for (auto a = merge.begin(), b = a + 1; b != merge.end(); a++, b++)
+            mergeList.push_back(std::make_pair(*a, *b));
+    }
+}
+
+static void mergeBlocksSameEndPoint(BasicBlock *a, BasicBlock *b) {
+    // merge b into a by removing the part emulated by b from a and connecting
+    // a and b with a jump
+    DBG("merge blocks " << a->getName() << " and " << b->getName());
+
+    // find split point, it is possible that splitBlock != a
+    Instruction *pivot = findInstStart(a, getBlockAddress(b));
+    assert(pivot);
+    BasicBlock *splitBlock = pivot->getParent();
+
+    // temporarily remove all block metadata from a in case its terminator is
+    // removed
+    SmallVector<std::pair<unsigned, MDNode*>, 4> mds;
+    Instruction *term = a->getTerminator();
+    term->getAllMetadata(mds);
+    for (auto it : mds)
+        term->setMetadata(it.first, NULL);
+
+    // split a and insert a branch to b
+    if (splitBlock != a)
+        DBG("splitting successor block of " << a->getName());
+
+    BasicBlock *deadTail = splitBlock->splitBasicBlock(pivot);
+
+    // duplicate PC store and follow it by 'ret void' to mimic regular
+    // successors for recovered blocks
+    StoreInst *pcStore = cast<StoreInst>(pivot->clone());
+    pcStore->setMetadata("inststart", NULL);
+    pcStore->insertBefore(splitBlock->getTerminator());
+    splitBlock->getTerminator()->eraseFromParent();
+    ReturnInst::Create(splitBlock->getContext(), splitBlock);
+    DeleteDeadBlock(deadTail);
+
+    // re-insert metadata back into (possibly new) terminator
+    term = a->getTerminator();
+    for (auto it : mds)
+        term->setMetadata(it.first, it.second);
+
+    // update lastpc of a to the last instruction before b
+    setBlockMeta(a, "lastpc", getLastInstStartPc(a));
+
+    // copy all successors of a to b, except b itself
+    std::vector<BasicBlock*> aSuccs, bSuccs;
+    getBlockSuccs(a, aSuccs);
+    getBlockSuccs(b, bSuccs);
+
+    for (BasicBlock *succ : aSuccs) {
+        if (!vectorContains(bSuccs, succ))
+            bSuccs.push_back(succ);
+    }
+
+    setBlockSuccs(b, bSuccs);
+
+    // set b as only successor of a
+    aSuccs.clear();
+    aSuccs.push_back(b);
+    setBlockSuccs(a, aSuccs);
+
+    // tag blocks as merged (for plotting in -dot-merged-blocks pass)
+    setBlockMeta(a, "merged", MDNode::get(a->getContext(), NULL));
+    setBlockMeta(b, "merged", MDNode::get(a->getContext(), NULL));
+}
+
+static void findExceptionOverlaps(Function *wrapper,
+        std::list<std::pair<BasicBlock*, BasicBlock*>> &mergeList) {
+    std::vector<BasicBlock*> succs;
+
+    for (BasicBlock &bb : *wrapper) {
+        if (isRecoveredBlock(&bb) && getBlockSuccs(&bb, succs)) {
+            unsigned lastpc = getLastPc(&bb);
+
+            for (BasicBlock *succ : succs) {
+                if (succ != &bb && getBlockAddress(succ) == lastpc) {
+                    mergeList.push_back(std::make_pair(&bb, succ));
+                    break;
+                }
+            }
+        }
+    }
+}
+
+static void removeExceptionHelper(BasicBlock *bb, BasicBlock *succ) {
+    DBG("remove first instruction of " << succ->getName() << " from " << bb->getName());
+
+    // Erase !inststart instruction and call to helper_raise_exception (the
+    // rest is either required or will be removed by DCE)
+    Instruction *pivot = findInstStart(bb, getBlockAddress(succ));
+    assert(pivot);
+    std::vector<Instruction*> eraseList = {pivot};
+
+    for (BasicBlock::iterator i = pivot, e = pivot->getParent()->end(); i != e; i++) {
+        ifcast(CallInst, call, i) {
+            Function *f = call->getCalledFunction();
+
+            if (f && f->getName() == "helper_raise_exception") {
+                eraseList.push_back(call);
+                break;
+            }
+        }
+    }
+
+    for (Instruction *i : eraseList)
+        i->eraseFromParent();
+
+    // Update lastpc metadata to previous !inststart
+    setBlockMeta(bb, "lastpc", getLastInstStartPc(bb, true));
+
+    // Transfer successors of bb to succ and set bb's only successor to succ
+    std::vector<BasicBlock*> succs1, succs2;
+    getBlockSuccs(bb, succs1);
+    getBlockSuccs(succ, succs2);
+
+    for (BasicBlock *b : succs1) {
+        if (b != succ && !vectorContains(succs2, b))
+            succs2.push_back(b);
+    }
+
+    succs1.clear();
+    succs1.push_back(succ);
+
+    setBlockSuccs(bb, succs1);
+    setBlockSuccs(succ, succs2);
+}
+
+bool FixOverlapsPass::runOnModule(Module &m) {
+    Function *wrapper = m.getFunction("wrapper");
+    assert(wrapper && "expected @wrapper() function");
+    bool changed = false;
+
+    std::list<std::pair<BasicBlock*, BasicBlock*>> mergeList;
+
+    findMergePairs(wrapper, mergeList);
+    changed |= !mergeList.empty();
+
+    for (auto pair : mergeList)
+        mergeBlocksSameEndPoint(pair.first, pair.second);
+
+    mergeList.clear();
+    findExceptionOverlaps(wrapper, mergeList);
+    changed |= !mergeList.empty();
+
+    for (auto pair : mergeList)
+        removeExceptionHelper(pair.first, pair.second);
+
+    return changed;
+}

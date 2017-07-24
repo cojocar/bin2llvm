@@ -1,0 +1,29 @@
+From 3d6ed6a97afdf206742e1022f98dfe7829738ae8 Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Mon, 24 Jul 2017 17:15:45 +0200
+Subject: [PATCH 3/7] Makefile: make it compile on Debian jessie
+
+---
+ Makefile | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index ccf458b..df320d4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -101,6 +101,12 @@ ifeq (,$(wildcard /usr/include/x86_64-linux-gnu/c++/4.8/c++config.h))
+  export C_INCLUDE_PATH=/usr/include:/usr/include/x86_64-linux-gnu
+ endif
+ 
++ifeq (,$(wildcard /usr/include/x86_64-linux-gnu/c++/4.9/c++config.h))
++ export CPLUS_INCLUDE_PATH=/usr/include:/usr/include/x86_64-linux-gnu:/usr/include/x86_64-linux-gnu/c++/4.9
++ export C_INCLUDE_PATH=/usr/include:/usr/include/x86_64-linux-gnu
++endif
++
++
+ #############
+ # Downloads #
+ #############
+-- 
+2.1.4
+

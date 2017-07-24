@@ -1,0 +1,47 @@
+From acc1f35c9c160ce8c2f4567c69f015ddef1078d0 Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Tue, 25 Jul 2017 11:15:12 +0200
+Subject: [PATCH 7/7] Makefile: configure cmake target
+
+---
+ Makefile | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index df320d4..7fa6b06 100644
+--- a/Makefile
++++ b/Makefile
+@@ -64,7 +64,7 @@ COMPILER_RT_DEST_DIR=$(LLVM_NATIVE_SRC_DIR)/projects/compiler-rt
+ KLEE_QEMU_DIRS = $(foreach suffix,-debug -release,$(addsuffix $(suffix),klee klee-asan qemu qemu-asan))
+ 
+ ifeq ($(LLVMBUILD),$(S2EBUILD))
+-LLVM_DIRS = llvm-debug llvm-native llvm-release
++LLVM_DIRS = llvm-debug llvm-native llvm-release llvm-cmake
+ endif
+ 
+ clean:
+@@ -156,9 +156,21 @@ stamps/llvm-native-configure: CONFIGURE_COMMAND = $(S2EBUILD)/$(LLVM_NATIVE_SRC_
+                                                   $(LLVM_CONFIGURE_FLAGS) \
+                                                   --disable-assertions #compiler-rt won't build if we specify explicit targets...
+ 
++
+ stamps/llvm-native-make: stamps/llvm-native-configure
+ stamps/llvm-native-make: BUILD_OPTS = ENABLE_OPTIMIZED=1
+ 
++stamps/llvm-cmake-configure: CONFIGURE_COMMAND = cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=$(CLANG_CC) \
++                                                 -DCMAKE_CXX_COMPILER=$(CLANG_CXX) \
++                                                 -DCMAKE_INSTALL_PREFIX=$(S2EBUILD)/opt \
++                                                 -DLLVM_INSTALL_PREFIX=$(S2EBUILD)/opt \
++                                                 -DCMAKE_BUILD_TYPE=Release \
++                                                 -DLLVM_REQUIRES_RTTI=1 \
++                                                 -DLLVM_TARGET_ARCH=X86_64 \
++                                                 -DLLVM_TARGETS_TO_BUILD=X86 \
++                                                 $(S2EBUILD)/$(LLVM_SRC_DIR)
++
++
+ #Then, build LLVM with the clang compiler.
+ #Note that we build LLVM without clang and compiler-rt, because S2E does not need them.
+ stamps/llvm-debug-configure: stamps/llvm-native-make
+-- 
+2.1.4
+

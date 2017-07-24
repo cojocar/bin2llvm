@@ -1,0 +1,20 @@
+# vim: set ft=make:
+TOOLS_PREFIX ?= arm-none-eabi-
+CROSS_CC ?= $(TOOLS_PREFIX)gcc
+OBJCOPY ?= $(TOOLS_PREFIX)objcopy
+CFLAGS ?= -O0
+LDFLAGS += -Ttext=0x0  -nostdlib -nostdinc
+
+.SECONDARY:
+
+%.armbe.S.elf: %.armbe.S
+	$(CROSS_CC) $(CFLAGS) $(LDFLAGS) -mbig-endian -march=armv7-r -o $@ $^
+
+%.armle.S.elf: %.armle.S
+	$(CROSS_CC) $(CFLAGS) $(LDFLAGS) -march=armv7-r -o $@ $^
+
+%.armbe.c.elf: %.armbe.c
+	$(CROSS_CC) $(CFLAGS) $(LDFLAGS) -mbig-endian -march=armv7-r -o $@ $^
+
+%.armle.c.elf: %.armle.c
+	$(CROSS_CC) $(CFLAGS) $(LDFLAGS) -march=armv7-r -o $@ $^
