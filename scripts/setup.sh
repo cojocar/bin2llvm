@@ -49,14 +49,14 @@ tp=third_party
 test -d ${tp} && { echo "please remove the ${tp} directory"; exit -1; }
 
 src_dir=$(pwd)
-s2e_dir="${src_dir}/${tp}/s2e"
+#s2e_dir="${src_dir}/${tp}/s2e"
 
 #### S2E
 checkout_and_clone s2e https://github.com/dslab-epfl/s2e.git bb6760f
 # install symlinks
-ln -fs "${src_dir}/harvesting-passes" "${s2e_dir}/qemu/s2e/Plugins/bin2llvm"
-
-ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.cpp" "${src_dir}/postprocess/translator/JumpTableInfo.cpp"
-ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.h" "${src_dir}/postprocess/translator/JumpTableInfo.h"
+#ln -fs "${src_dir}/harvesting-passes" "${s2e_dir}/qemu/s2e/Plugins/bin2llvm"
+#
+#ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.cpp" "${src_dir}/postprocess/translator/JumpTableInfo.cpp"
+#ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.h" "${src_dir}/postprocess/translator/JumpTableInfo.h"
 
 checkout_and_clone cajun https://github.com/cajun-jsonapi/cajun-jsonapi.git 24652f8

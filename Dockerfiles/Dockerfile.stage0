@@ -1,0 +1,39 @@
+#: vim: set ft=dockerfile :
+
+from debian:jessie-slim
+
+run set -x; \
+	mkdir -p /usr/src/bin2llvm/ \
+	&& apt-get update \
+	&& echo 'ca-certificates build-essential git liblua5.1-0-dev libsdl1.2-dev libsigc++-2.0-dev binutils-dev libiberty-dev libc6-dev-i386' > /usr/src/bin2llvm/deps \
+	&& apt-get install -y $(cat /usr/src/bin2llvm/deps) --no-install-recommends
+
+run set -x; \
+	apt-get install -y --no-install-recommends gcc-multilib g++-multilib nasm subversion flex bison
+run set -x; \
+	apt-get install -y --no-install-recommends wget cmake libgettextpo-dev
+
+run set -x; \
+	apt-get install -y --no-install-recommends python-llvm python-pip
+
+run pip install pyelftools
+
+#add examples /usr/src/bin2llvm/examples
+#add harvesting-passes /usr/src/bin2llvm/harvesting-passes
+#add postprocess /usr/src/bin2llvm/postprocess
+#add pymodules /usr/src/bin2llvm/pymodules
+add patches /usr/src/bin2llvm/patches
+
+add scripts /usr/src/bin2llvm/scripts
+
+#add bin2llvm.py /usr/src/bin2llvm/bin2llvm.py
+
+# do the setup
+run cd /usr/src/bin2llvm \
+	&& rm -rf third_party \
+	&& ./scripts/setup.sh
+
+# build stage 0
+run cd /usr/src/bin2llvm \
+	&& ./scripts/build_stage0.sh /usr/src/bin2llvm /usr/src/bin2llvm-build
+

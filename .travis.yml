@@ -1,0 +1,18 @@
+sudo: required
+
+language: ruby
+
+services:
+      - docker
+
+install:
+    # build stage1 from stage0
+    - docker pull docker.io/cojocar/bin2llvm-dev-stage0
+    - docker tag  cojocar/bin2llvm-dev-stage0 bin2llvm-dev-stage0
+    - tar cz -- Dockerfiles/Dockerfile.stage1 $(cat Dockerfiles/file-list) | docker build -t bin2llvm-dev -f Dockerfiles/Dockerfile.stage1 -
+    - docker run -d bin2llvm-dev /bin/sh -c "true"
+    - docker ps -a
+
+script:
+    - docker run -t bin2llvm-dev /bin/bash -c "cd /usr/local/bin2llvm/tests; BIN2LLVM_INSTALL_DIR=/usr/local/bin2llvm make"
+

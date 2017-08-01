@@ -17,21 +17,27 @@
 ################################################################################
 
 
-set -x
-
-test ${#} -eq 1 || { echo $0 path-to-build-dir; exit -1 ; } ;
-
-BUILD_DIR="${1}"
-
-src_dir=$(pwd)
-
-src_dir=$(realpath "${src_dir}")
-build_dir=$(realpath "${BUILD_DIR}")
-
-
+# this will build all the llvm&klee dependencies
 set -uex
 
-./scripts/build_stage0.sh "${src_dir}" "${build_dir}"
+test ${#} -eq 2 || { echo $0 path-to-src-dir path-to-build-dir; exit -1 ; } ;
 
-./scripts/build_stage1.sh "${src_dir}" "${build_dir}"
+src_dir="${1}"
+build_dir="${2}"
 
+src_dir=$(realpath "${src_dir}")
+build_dir=$(realpath "${build_dir}")
+
+tp_dir=${src_dir}/third_party
+
+export BUILD_ARCH=x86-64
+export EXTRA_QEMU_FLAGS="--extra-cflags=-I${tp_dir}/cajun/include --extra-cxxflags=-I${tp_dir}/cajun/include"
+export CAJUN_INCLUDE_DIR="${tp_dir}/cajun/include"
+
+mkdir -p "${build_dir}"
+cd ${build_dir}
+
+make -f ${src_dir}/third_party/s2e/Makefile stamps/tools-release-make
+make -f ${src_dir}/third_party/s2e/Makefile stamps/klee-release-make
+
+cd ${src_dir}

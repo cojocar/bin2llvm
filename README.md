@@ -23,7 +23,7 @@ $ docker pull docker.io/cojocar/bin2llvm
 $ # run one example binary
 $ docker run --rm -t docker.io/cojocar/bin2llvm /bin/bash -c "/usr/local/bin2llvm/bin/bin2llvm.py --file /usr/local/bin2llvm/bin/ls-example"
 $ # run the tests
-$ docker run --rm -t docker.io/cojocar/bin2llvm /bin/bash -c "cd /usr/local/bin2llvm/tests; BIN2LLVM_INSTALL_DIR=/usr/local/bin2llvm make;
+$ docker run --rm -t docker.io/cojocar/bin2llvm /bin/bash -c "cd /usr/local/bin2llvm/tests; BIN2LLVM_INSTALL_DIR=/usr/local/bin2llvm make;"
 ```
 
 ## How to build, install & run from the source tree
