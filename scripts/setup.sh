@@ -37,6 +37,13 @@ function checkout_and_clone()
 	# checkout the right version
 	(cd ${target_dir} && git checkout ${target_commit} -b ${app}-dev)
 
+	if [ "${patch_apply_cmd}" = "git am" ]; then
+		# make sure that git config user.email and user.name are set
+		(cd ${target_dir}; \
+			git config user.email || git config --local user.email "bin2llvm@github.com" ; \
+			git config user.name || git config --local user.name "The bin2llvm Authors"; )
+	fi
+
 	if [ -d patches/${app} -a $(ls patches/${app}/*.patch 2>/dev/null | wc -l) -gt 0 ] ; then
 		# apply patches
 		for p in patches/${app}/*.patch; do
