@@ -1,4 +1,4 @@
-# The bin2llvm Project
+# The bin2llvm Project [![Build Status](https://travis-ci.org/cojocar/bin2llvm.svg?branch=master)](https://travis-ci.org/cojocar/bin2llvm)
 
 This is an [S2E](https://github.com/dslab-epfl/s2e/) based binary-to-LLVM
 translator. It converts any binary code to LLVM code. The resulting LLVM module
