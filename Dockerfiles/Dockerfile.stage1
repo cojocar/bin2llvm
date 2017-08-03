@@ -25,14 +25,6 @@ run groupadd -r bin2llvm -g 999 \
 	&& useradd -u 999 -r -g 999 -d /usr/local/bin2llvm -s /bin/bash bin2llvm
 
 
-# testing dependencies
-run set -x; \
-	apt-get install -y --no-install-recommends rubygems ruby-dev gcc-arm-none-eabi
-
-run set -x; \
-	gem install aruba --version 0.6.0 && \
-	gem install cucumber --version 1.3.18
-
 # testing dir
 add tests /usr/local/bin2llvm/tests/
 run chown -R 999:999 /usr/local/bin2llvm/

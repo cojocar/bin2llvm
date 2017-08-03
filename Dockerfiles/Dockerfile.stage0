@@ -18,15 +18,17 @@ run set -x; \
 
 run pip install pyelftools
 
-#add examples /usr/src/bin2llvm/examples
-#add harvesting-passes /usr/src/bin2llvm/harvesting-passes
-#add postprocess /usr/src/bin2llvm/postprocess
-#add pymodules /usr/src/bin2llvm/pymodules
 add patches /usr/src/bin2llvm/patches
 
 add scripts /usr/src/bin2llvm/scripts
 
-#add bin2llvm.py /usr/src/bin2llvm/bin2llvm.py
+# testing dependencies
+run set -x; \
+	apt-get install -y --no-install-recommends rubygems ruby-dev gcc-arm-none-eabi
+
+run set -x; \
+	gem install aruba --version 0.6.0 && \
+	gem install cucumber --version 1.3.18
 
 # do the setup
 run cd /usr/src/bin2llvm \

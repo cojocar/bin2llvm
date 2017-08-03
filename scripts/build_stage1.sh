@@ -67,12 +67,6 @@ make -C llvm-cmake install
 pfile="${src_dir}/patches/extra/001-llvm-native-fix-bits-cfg.diff"
 patch -N -s -p0 --dry-run <  ${pfile} && patch -N -s -p0 < ${pfile}
 
-test -L "${s2e_dir}/qemu/s2e/Plugins/bin2llvm" || ln -fs "${src_dir}/harvesting-passes" "${s2e_dir}/qemu/s2e/Plugins/bin2llvm"
-
-test -L "${src_dir}/postprocess/translator/JumpTableInfo.cpp" || ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.cpp" "${src_dir}/postprocess/translator/JumpTableInfo.cpp"
-test -L "${src_dir}/postprocess/translator/JumpTableInfo.h" || ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.h" "${src_dir}/postprocess/translator/JumpTableInfo.h"
-ls -lah "${src_dir}/postprocess/translator/"
-
 # configure passes
 passes_build_dir="${build_dir}/bin2llvm-postprocess-build"
 CLANG_CXX="${build_dir}/llvm-native/Release/bin/clang++"
