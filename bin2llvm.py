@@ -104,7 +104,7 @@ def get_replace_pass_cfg(cfg):
                 (seg['file'], seg['address'])
     return ret
 
-def init_path():
+def init_path(endianness='little'):
     # this file is ${prefix}/bin/bin2llvm.py
     P = TranslatorPaths(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -121,7 +121,7 @@ def init_path():
     opt_path = P.get_llvm_opt()
     as_path = P.get_llvm_as()
     link_path = P.get_llvm_link()
-    translator_path = P.get_qemu()
+    translator_path = P.get_qemu(endianness)
     linker_path = P.get_linker()
     path_ll_for_helpers = P.get_ll_helpers()
     linker_lib = P.get_lib()
@@ -160,7 +160,7 @@ def run_passes_pre(raw_llvm, out_funcs, out_remaining, cfg, jump_table_file=None
     cmd +=  "-armmarkjumps "
     cmd +=  "-markfuncentry "
     cmd +=  "-rmbranchtrace "
-    if cfg['endiannes'] != 'little':
+    if cfg['endianness'] != 'little':
         cmd += "-is-big-endian "
     cmd +=  "-buildfunctions -save-funcs %s " % out_funcs
 
@@ -551,7 +551,7 @@ def do_raw_arm_many(paths_to_raw, load_addresses):
 def write_configs(machine_file, translator_file, cfg):
     write_machine_cfg(machine_file, \
             cfg['architecture'], cfg['cpu_model'], \
-            cfg['endiannes'], cfg['entry_address'], cfg['segments'])
+            cfg['endianness'], cfg['entry_address'], cfg['segments'])
     write_tranlator_cfg(translator_file, cfg['segments'])
 
 should_continue = True
@@ -641,7 +641,7 @@ def main():
         end = 'little' if args.type.endswith('le') else 'big'
         cfg = do_raw_arm_many(args.file, \
                 map(lambda str_addr: int(str_addr.replace('_', ''), 16), args.load_address))
-        cfg['endiannes'] = end
+        cfg['endianness'] = end
     else:
         raise Exception("Type not supported yet.")
 
@@ -684,7 +684,7 @@ def main():
     head = 0
     global should_continue
     should_continue = True
-    init_path()
+    init_path(cfg['endianness'])
     while head < len(entryQueue) and should_continue:
         #log.info("addresses visited: " + str(len(cov.getAlreadyExplored())))
         e = entryQueue[head]
@@ -697,7 +697,7 @@ def main():
         alreadyExplored = cov.get_already_explored_intervals()
         write_machine_cfg(machine_file, \
                 cfg['architecture'], cfg['cpu_model'], \
-                cfg['endiannes'], e, cfg['segments'])
+                cfg['endianness'], e, cfg['segments'])
         already_file = os.path.join(args.temp_dir,\
                 'already-explored-%d.json' % cnt)
         with open(already_file, 'wt') as f:
@@ -713,12 +713,13 @@ def main():
         log.debug("[translator] already explored %d (intervals)" % len(alreadyExplored))
 
         # run translator
-        if cfg['endiannes'] == 'little':
+        if cfg['endianness'] == 'little':
             pass
         else:
-            translator_path = translator_path_build_dir + \
-                    '/qemu-debug/armeb-s2e-softmmu/qemu-system-armeb'
-            raise Exception("N/A")
+            #translator_path = translator_path_build_dir + \
+            #        '/qemu-debug/armeb-s2e-softmmu/qemu-system-armeb'
+            #raise Exception("N/A")
+            pass
         ok = run_translator(args.temp_dir, machine_file, \
                 translator_file, cnt)
         if ok is False:

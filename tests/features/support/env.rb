@@ -17,9 +17,9 @@ class TranslatorPaths
 		return self.get(File.join('lib', s))
 	end
 
-	def get_qemu()
-		return self.get_bin(File.join('qemu-release', 'arm-s2e-softmmu', 'qemu-system-arm'))
-	end
+#	def get_qemu()
+#		return self.get_bin(File.join('qemu-release', 'arm-s2e-softmmu', 'qemu-system-arm'))
+#	end
 
 	def get_linker()
 		return self.get_bin('linky')

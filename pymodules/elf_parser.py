@@ -52,7 +52,7 @@ def do_elf(path_to_elf, out_dir='/tmp'):
 
     ret['architecture'] = 'arm'
     ret['cpu_model'] = 'arm926'
-    ret['endiannes'] = 'little' if elf.little_endian else 'big'
+    ret['endianness'] = 'little' if elf.little_endian else 'big'
     ret['entry_address'] = [elf.header.e_entry]
 
     thumb_targets = []

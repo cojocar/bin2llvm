@@ -31,8 +31,14 @@ class TranslatorPaths(object):
     def get_lib(self, s=''):
         return self.get(os.path.join('lib', s))
 
-    def get_qemu(self):
-        return self.get_bin(os.path.join('qemu-release', 'arm-s2e-softmmu', 'qemu-system-arm'))
+    def get_qemu(self, endiannes):
+        if endiannes == 'big':
+            arch = 'armeb'
+        else:
+            assert(endiannes == 'little')
+            arch = 'arm'
+        return self.get_bin(os.path.join('qemu-release', \
+                '%s-s2e-softmmu' % arch, 'qemu-system-%s' % arch))
 
     def get_linker(self):
         return self.get_bin('linky')

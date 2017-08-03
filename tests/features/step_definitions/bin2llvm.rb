@@ -33,7 +33,7 @@ When(/^translator runs with random output directory$/) do
 		cmd = cmd + " --load-address " + @binary_load
 	end
 	cmd = cmd + " --entry " + @binary_entry
-	#announce_or_puts("Running: " + cmd)
+	announce_or_puts("Running: " + cmd)
 	run_simple(unescape(cmd), true, 100)
 	#announce_or_puts('done translation')
 	#cd(@tmp_dir)
