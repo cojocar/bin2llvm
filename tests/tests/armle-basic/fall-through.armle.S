@@ -11,5 +11,5 @@ _start:
 do_not_explore:
     add r6, r6, r6
 after_do_not_explore:
-    add r8, r8, r8
+    sub r8, r0, r8
     bx lr
