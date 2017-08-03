@@ -5,7 +5,8 @@ TARGETS = \
 		  tests/thumb-to-arm/ \
 		  tests/armle-func/ \
 		  tests/helpers/ \
-		  tests/thumb2/
+		  tests/thumb2/ \
+		  tests/switch-table/
 
 all: check
 
