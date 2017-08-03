@@ -18,10 +18,6 @@ run set -x; \
 
 run pip install pyelftools
 
-add patches /usr/src/bin2llvm/patches
-
-add scripts /usr/src/bin2llvm/scripts
-
 # testing dependencies
 run set -x; \
 	apt-get install -y --no-install-recommends rubygems ruby-dev gcc-arm-none-eabi
@@ -29,6 +25,13 @@ run set -x; \
 run set -x; \
 	gem install aruba --version 0.6.0 && \
 	gem install cucumber --version 1.3.18
+
+add patches /usr/src/bin2llvm/patches
+
+run mkdir -p /usr/src/bin2llvm/scripts
+
+add scripts/setup.sh /usr/src/bin2llvm/scripts/setup.sh
+add scripts/build_stage0.sh /usr/src/bin2llvm/scripts/build_stage0.sh
 
 # do the setup
 run cd /usr/src/bin2llvm \
