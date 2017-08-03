@@ -1,0 +1,52 @@
+From 7cb9ad11e29a400bf1f3818e9afe1b7d2043b316 Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Thu, 3 Aug 2017 13:06:24 +0200
+Subject: [PATCH 9/9] qemu: tcg: disable TCG and LLVM optimisations
+
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
+---
+ qemu/tcg/tcg-llvm.cpp | 14 +++++++-------
+ qemu/tcg/tcg.c        |  2 +-
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/qemu/tcg/tcg-llvm.cpp b/qemu/tcg/tcg-llvm.cpp
+index 3e0c6df..7437a7e 100644
+--- a/qemu/tcg/tcg-llvm.cpp
++++ b/qemu/tcg/tcg-llvm.cpp
+@@ -378,13 +378,13 @@ TCGLLVMContextPrivate::TCGLLVMContextPrivate()
+     m_functionPassManager->add(
+             new DataLayout(*m_executionEngine->getDataLayout()));
+ 
+-    m_functionPassManager->add(createReassociatePass());
+-    m_functionPassManager->add(createConstantPropagationPass());
+-    m_functionPassManager->add(createInstructionCombiningPass());
+-    m_functionPassManager->add(createGVNPass());
+-    m_functionPassManager->add(createDeadStoreEliminationPass());
+-    m_functionPassManager->add(createCFGSimplificationPass());
+-    m_functionPassManager->add(createPromoteMemoryToRegisterPass());
++    //m_functionPassManager->add(createReassociatePass());
++    //m_functionPassManager->add(createConstantPropagationPass());
++    //m_functionPassManager->add(createInstructionCombiningPass());
++    //m_functionPassManager->add(createGVNPass());
++    //m_functionPassManager->add(createDeadStoreEliminationPass());
++    //m_functionPassManager->add(createCFGSimplificationPass());
++    //m_functionPassManager->add(createPromoteMemoryToRegisterPass());
+ 
+     //m_functionPassManager->add(new SelectRemovalPass());
+ 
+diff --git a/qemu/tcg/tcg.c b/qemu/tcg/tcg.c
+index 23c7a50..369196e 100644
+--- a/qemu/tcg/tcg.c
++++ b/qemu/tcg/tcg.c
+@@ -24,7 +24,7 @@
+ 
+ /* define it to use liveness analysis (better code) */
+ #define USE_LIVENESS_ANALYSIS
+-#define USE_TCG_OPTIMIZATIONS
++//#define USE_TCG_OPTIMIZATIONS
+ 
+ #include "config.h"
+ 
+-- 
+2.1.4
+

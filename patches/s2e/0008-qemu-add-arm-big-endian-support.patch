@@ -1,0 +1,175 @@
+From c7ebea861bdf68dbafe7e57c1b45eac8db921094 Mon Sep 17 00:00:00 2001
+From: Lucian Cojocar <lucian.cojocar@vu.nl>
+Date: Thu, 3 Aug 2017 13:05:38 +0200
+Subject: [PATCH 8/9] qemu: add arm big-endian support
+
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
+---
+ Makefile                                   |  1 +
+ qemu/default-configs/armeb-s2e-softmmu.mak | 29 +++++++++++++++++++++++++++++
+ qemu/default-configs/armeb-softmmu.mak     | 29 +++++++++++++++++++++++++++++
+ qemu/s2e/MMUFunctionHandlers.cpp           | 12 +++++++++++-
+ qemu/softmmu_template.h                    |  2 +-
+ qemu/vl.c                                  |  4 ++++
+ 6 files changed, 75 insertions(+), 2 deletions(-)
+ create mode 100644 qemu/default-configs/armeb-s2e-softmmu.mak
+ create mode 100644 qemu/default-configs/armeb-softmmu.mak
+
+diff --git a/Makefile b/Makefile
+index 7fa6b06..0d43d0a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -282,6 +282,7 @@ QEMU_S2E_ARCH =
+ QEMU_S2E_ARCH += i386-s2e-softmmu i386-softmmu
+ QEMU_S2E_ARCH += x86_64-s2e-softmmu x86_64-softmmu
+ QEMU_S2E_ARCH += arm-s2e-softmmu arm-softmmu
++QEMU_S2E_ARCH += armeb-softmmu armeb-s2e-softmmu
+ 
+ empty :=
+ comma := ,
+diff --git a/qemu/default-configs/armeb-s2e-softmmu.mak b/qemu/default-configs/armeb-s2e-softmmu.mak
+new file mode 100644
+index 0000000..22bb3cb
+--- /dev/null
++++ b/qemu/default-configs/armeb-s2e-softmmu.mak
+@@ -0,0 +1,29 @@
++# Default configuration for armeb-s2e-softmmu
++
++include pci.mak
++CONFIG_GDBSTUB_XML=y
++CONFIG_VGA=y
++CONFIG_ISA_MMIO=y
++CONFIG_NAND=y
++CONFIG_ECC=y
++CONFIG_SERIAL=y
++CONFIG_PTIMER=y
++CONFIG_SD=y
++CONFIG_MAX7310=y
++CONFIG_WM8750=y
++CONFIG_TWL92230=y
++CONFIG_TSC2005=y
++CONFIG_LM832X=y
++CONFIG_TMP105=y
++CONFIG_STELLARIS_INPUT=y
++CONFIG_SSD0303=y
++CONFIG_SSD0323=y
++CONFIG_ADS7846=y
++CONFIG_MAX111X=y
++CONFIG_SSI=y
++CONFIG_SSI_SD=y
++CONFIG_LAN9118=y
++CONFIG_SMC91C111=y
++CONFIG_DS1338=y
++CONFIG_PFLASH_CFI01=y
++CONFIG_PFLASH_CFI02=y
+diff --git a/qemu/default-configs/armeb-softmmu.mak b/qemu/default-configs/armeb-softmmu.mak
+new file mode 100644
+index 0000000..ae19eb6
+--- /dev/null
++++ b/qemu/default-configs/armeb-softmmu.mak
+@@ -0,0 +1,29 @@
++# Default configuration for armeb-softmmu
++
++include pci.mak
++CONFIG_GDBSTUB_XML=y
++CONFIG_VGA=y
++CONFIG_ISA_MMIO=y
++CONFIG_NAND=y
++CONFIG_ECC=y
++CONFIG_SERIAL=y
++CONFIG_PTIMER=y
++CONFIG_SD=y
++CONFIG_MAX7310=y
++CONFIG_WM8750=y
++CONFIG_TWL92230=y
++CONFIG_TSC2005=y
++CONFIG_LM832X=y
++CONFIG_TMP105=y
++CONFIG_STELLARIS_INPUT=y
++CONFIG_SSD0303=y
++CONFIG_SSD0323=y
++CONFIG_ADS7846=y
++CONFIG_MAX111X=y
++CONFIG_SSI=y
++CONFIG_SSI_SD=y
++CONFIG_LAN9118=y
++CONFIG_SMC91C111=y
++CONFIG_DS1338=y
++CONFIG_PFLASH_CFI01=y
++CONFIG_PFLASH_CFI02=y
+diff --git a/qemu/s2e/MMUFunctionHandlers.cpp b/qemu/s2e/MMUFunctionHandlers.cpp
+index 4ac91af..14968b9 100644
+--- a/qemu/s2e/MMUFunctionHandlers.cpp
++++ b/qemu/s2e/MMUFunctionHandlers.cpp
+@@ -89,7 +89,13 @@ static void io_write_chk(S2EExecutionState *state,
+     env->mem_io_vaddr = addr;
+     env->mem_io_pc = (uintptr_t)retaddr;
+ #ifdef TARGET_WORDS_BIGENDIAN
+-    #error This is not implemented yet.
++    if (s2e_ismemfunc(mr, 1))
++    {
++        uintptr_t pa = s2e_notdirty_mem_write(physaddr);
++        //TODO: [J] Byteswap val here
++        state->writeMemory(pa, val, S2EExecutionState::HostAddress);
++        return;
++    }
+ #else
+     if (s2e_ismemfunc(mr, 1)) {
+         uintptr_t pa = s2e_notdirty_mem_write(physaddr);
+@@ -149,6 +155,8 @@ static ref<Expr> io_read_chk(S2EExecutionState *state,
+         if (isSymb) {
+             return state->createSymbolicValue(ss.str(), width);
+         }
++
++        //TODO: [J] Byteswap value after reading
+         return state->readMemory(pa, width, S2EExecutionState::HostAddress);
+     }
+ 
+@@ -349,6 +357,7 @@ ref<Expr> S2EExecutor::handle_ldst_mmu(Executor* executor,
+                 for(int i = data_size - 1; i >= 0; i--) {
+                     std::vector<ref<Expr> > unalignedAccessArgs;
+                     #ifdef TARGET_WORDS_BIGENDIAN
++                    //TODO: [J] Check what is happening here
+                     ref<Expr> shiftCount = ConstantExpr::create((((data_size - 1) * 8) - (i * 8)), Expr::Int32);
+                     #else
+                     ref<Expr> shiftCount = ConstantExpr::create(i * 8, Expr::Int32);
+@@ -377,6 +386,7 @@ ref<Expr> S2EExecutor::handle_ldst_mmu(Executor* executor,
+                 ref<Expr> shift2 = ConstantExpr::create((data_size * 8) - ((addr & (data_size - 1)) * 8), Expr::Int32);
+ 
+                 #ifdef TARGET_WORDS_BIGENDIAN
++                //TODO: [J] Check what is happening here
+                 value = OrExpr::create(ShlExpr::create(value1, shift), LShrExpr::create(value2, shift2));
+                 #else
+                 value = OrExpr::create(LShrExpr::create(value1, shift), ShlExpr::create(value2, shift2));
+diff --git a/qemu/softmmu_template.h b/qemu/softmmu_template.h
+index 9fbc837..f972ad4 100644
+--- a/qemu/softmmu_template.h
++++ b/qemu/softmmu_template.h
+@@ -521,7 +521,7 @@ inline void glue(glue(io_write_chk, SUFFIX), MMUSUFFIX)(ENV_PARAM target_phys_ad
+     }
+ #else
+ #ifdef TARGET_WORDS_BIGENDIAN
+-    if (s2e_ismemfunc(s2e_ismemfunc(mr, 1)) {
++    if (s2e_ismemfunc(mr, 1)) {
+         uintptr_t pa = s2e_notdirty_mem_write(physaddr);
+         stl_raw((uint8_t *)(intptr_t)(pa), val>>32);
+         stl_raw((uint8_t *)(intptr_t)(pa+4), val);
+diff --git a/qemu/vl.c b/qemu/vl.c
+index f0f27a8..876263b 100644
+--- a/qemu/vl.c
++++ b/qemu/vl.c
+@@ -1851,7 +1851,11 @@ char *qemu_find_file(int type, const char *name)
+     switch (type) {
+     case QEMU_FILE_TYPE_LIB:
+         /* XXX: Terrible hack. Redo it properly! */
++#if defined(TARGET_ARM) && defined(TARGET_WORDS_BIGENDIAN)
++        subdir="../armeb-s2e-softmmu/";
++#else
+         subdir="../" TARGET_ARCH "-s2e-softmmu/";
++#endif
+         break;
+     case QEMU_FILE_TYPE_BIOS:
+         subdir = "";
+-- 
+2.1.4
+

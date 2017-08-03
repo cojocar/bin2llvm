@@ -1,8 +1,9 @@
-From 07a2fddc6b610be3e2b655bd538f46498e895f2b Mon Sep 17 00:00:00 2001
+From 2d90e1225ebf50fc01aad772a36da4e526750b4d Mon Sep 17 00:00:00 2001
 From: Lucian Cojocar <lucian.cojocar@vu.nl>
 Date: Mon, 24 Jul 2017 17:16:24 +0200
-Subject: [PATCH 4/7] configurabe_machine: add it
+Subject: [PATCH 4/9] configurabe_machine: add it
 
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
 ---
  qemu/hw/configurable_machine.c | 600 +++++++++++++++++++++++++++++++++++++++++
  1 file changed, 600 insertions(+)

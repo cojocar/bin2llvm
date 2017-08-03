@@ -1,8 +1,9 @@
-From acc1f35c9c160ce8c2f4567c69f015ddef1078d0 Mon Sep 17 00:00:00 2001
+From 7c0108b6b318ae674aa20feab4c98c72accc7c95 Mon Sep 17 00:00:00 2001
 From: Lucian Cojocar <lucian.cojocar@vu.nl>
 Date: Tue, 25 Jul 2017 11:15:12 +0200
-Subject: [PATCH 7/7] Makefile: configure cmake target
+Subject: [PATCH 7/9] Makefile: configure cmake target
 
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
 ---
  Makefile | 14 +++++++++++++-
  1 file changed, 13 insertions(+), 1 deletion(-)

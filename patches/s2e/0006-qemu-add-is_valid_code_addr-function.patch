@@ -1,8 +1,9 @@
-From d0279a6b4fb16938dc62f1dbd94c00b1ffa9a69f Mon Sep 17 00:00:00 2001
+From 6bc6a9ee22b7327efafee573f9d98ccb29ec1aa0 Mon Sep 17 00:00:00 2001
 From: Lucian Cojocar <lucian.cojocar@vu.nl>
 Date: Mon, 24 Jul 2017 17:33:11 +0200
-Subject: [PATCH 6/7] qemu: add is_valid_code_addr function
+Subject: [PATCH 6/9] qemu: add is_valid_code_addr function
 
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
 ---
  qemu/exec.c | 27 +++++++++++++++++++++++++++
  1 file changed, 27 insertions(+)

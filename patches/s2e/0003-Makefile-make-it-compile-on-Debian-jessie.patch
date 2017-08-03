@@ -1,8 +1,9 @@
-From 3d6ed6a97afdf206742e1022f98dfe7829738ae8 Mon Sep 17 00:00:00 2001
+From b25f1782cab2c363ed2adbdb178227f88d6724b5 Mon Sep 17 00:00:00 2001
 From: Lucian Cojocar <lucian.cojocar@vu.nl>
 Date: Mon, 24 Jul 2017 17:15:45 +0200
-Subject: [PATCH 3/7] Makefile: make it compile on Debian jessie
+Subject: [PATCH 3/9] Makefile: make it compile on Debian jessie
 
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
 ---
  Makefile | 6 ++++++
  1 file changed, 6 insertions(+)

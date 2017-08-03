@@ -1,8 +1,9 @@
-From ebf3658b0bde37ecbf9f665ae8725c35e6400208 Mon Sep 17 00:00:00 2001
+From 85c20daa57177cb485733b7f9e0c96e6a52d2c96 Mon Sep 17 00:00:00 2001
 From: Lucian Cojocar <lucian.cojocar@vu.nl>
 Date: Mon, 24 Jul 2017 17:29:22 +0200
-Subject: [PATCH 5/7] qemu: track the PC after the current BB
+Subject: [PATCH 5/9] qemu: track the PC after the current BB
 
+Signed-off-by: Lucian Cojocar <lucian.cojocar@vu.nl>
 ---
  qemu/exec-all.h             | 1 +
  qemu/target-arm/translate.c | 2 ++
