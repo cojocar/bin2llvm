@@ -16,6 +16,7 @@
 #
 ################################################################################
 
+patch_apply_cmd="patch"
 function checkout_and_clone()
 {
 	app=${1}
@@ -34,13 +35,15 @@ function checkout_and_clone()
 	fi
 
 	# checkout the right version
-	(cd ${target_dir} && git checkout ${target_commit})
+	(cd ${target_dir} && git checkout ${target_commit} -b ${app}-dev)
 
-	if [ -d patches/${app} ] ; then
+	if [ -d patches/${app} -a $(ls patches/${app}/*.patch 2>/dev/null | wc -l) -gt 0 ] ; then
 		# apply patches
 		for p in patches/${app}/*.patch; do
 			pp=$(realpath "${p}")
-			(cd ${target_dir} && patch -p1 < ${pp})
+			(cd ${target_dir} && \
+				patch -N -s -p1 --dry-run <  ${pp} && \
+				${patch_apply_cmd} -p1 < ${pp})
 		done
 	fi
 }
@@ -52,11 +55,6 @@ src_dir=$(pwd)
 #s2e_dir="${src_dir}/${tp}/s2e"
 
 #### S2E
+patch_apply_cmd="git am"
 checkout_and_clone s2e https://github.com/dslab-epfl/s2e.git bb6760f
-# install symlinks
-#ln -fs "${src_dir}/harvesting-passes" "${s2e_dir}/qemu/s2e/Plugins/bin2llvm"
-#
-#ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.cpp" "${src_dir}/postprocess/translator/JumpTableInfo.cpp"
-#ln -fs "${src_dir}/harvesting-passes/JumpTableInfo.h" "${src_dir}/postprocess/translator/JumpTableInfo.h"
-
 checkout_and_clone cajun https://github.com/cajun-jsonapi/cajun-jsonapi.git 24652f8
