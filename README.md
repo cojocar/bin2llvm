@@ -71,3 +71,11 @@ $ cd ./tests && BIN2LLVM_INSTALL_DIR=$(realpath ../../bin2llvm-install) make
 ```
 
 See the [test](./test) directory for more details.
+
+---
+
+# bin2llvm in practice
+
+The following works are using *bin2llvm*:
+- Cojocar, Lucian, Taddeus Kroes, and Herbert Bos. "[JTR: A Binary Solution for Switch-Case Recovery](https://link.springer.com/chapter/10.1007/978-3-319-62105-0_12)" International Symposium on Engineering Secure Software and Systems. Springer, Cham, 2017.
+- Cojocar, Lucian, et al. "[Pie: parser identification in embedded systems.](www.cs.vu.nl/~herbertb/papers/pie_acsac15.pdf)" Proceedings of the 31st Annual Computer Security Applications Conference. ACM, 2015.
